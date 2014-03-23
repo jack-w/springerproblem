@@ -11,7 +11,7 @@ canvas.addEventListener("mouseup", doMouseUp, false);
 $('#reset').click(function(){drawBoard()})
 
 /*************** canvas functions *************/
-function doMouseUp() {
+function doMouseUp(event) {
     var startx, starty
     var n = $('#size').val()
     var sqSize = canvas.width / n
