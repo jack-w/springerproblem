@@ -67,7 +67,7 @@ function doMouseUp() {
 
 }
 function drawBoard() {
-    alert('hi')
+//    alert('hi')
     var n = $('#size').val()
     var sqSize = canvas.width / n
     var x,y, sx,sy
