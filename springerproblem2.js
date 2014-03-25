@@ -1,7 +1,8 @@
 $(document).ready(function(){
 var canvas = document.getElementById('canvas');
 var c
-var background
+var running = false
+
 
 c = canvas.getContext('2d')
 drawBoard()
@@ -28,42 +29,58 @@ function doMouseUp(event) {
 
 //    alert([startx,starty])
 
-    var board = new makeBoard(n,[startx,starty])
-    var i = 0
-    if (n%2 == 0){
-    board.init()
-    board.move()
-    }
-    else {
-        if ((startx + starty*n)%2 == 0 ) {
-            board.init()
-            board.move()
+    if (!running) {
+        running = true
+        var board = new makeBoard(n,[startx,starty])
+        var i = 0
+        var font = c.font
+        font = font.split(' ')
+        font = font[font.length-1]
+        if (n%2 == 0){
+        board.init()
+        board.move()
         }
         else {
-            alert('there cannot be a solution!')
-            i = board.size*board.size
+            if ((startx + starty*n)%2 == 0 ) {
+                board.init()
+                board.move()
+            }
+            else {
+                alert('there cannot be a solution!')
+                i = board.size*board.size
+            }
         }
+
+
+        setInterval(function(){
+            if (i < board.size*board.size) {
+                var x,y, r
+                var n = $('#size').val()
+                var sqSize = canvas.width / n
+                r = 0.5 * sqSize
+                x = board.prev[i].x * sqSize + sqSize/2
+                y = board.prev[i].y * sqSize + sqSize/2
+                c.beginPath()
+                c.arc(x,y,r,0,2*Math.PI,false)
+                c.fillStyle = 'hsl('+board.readState(board.prev[i])*360/(board.size*board.size)+',100%,50%)'
+                c.fill()
+                c.font = r/2+'pt '+font
+                c.textAlign = 'center'
+                c.textBaseline = 'middle'
+                c.fillStyle = 'hsl('+(board.readState(board.prev[i])*360/(board.size*board.size)+30)+',100%,50%)'
+                c.fillText(i,x,y)
+    //            c.beginPath()
+    //            c.fillStyle = "white"
+    //            c.fillText(board.readState(board.prev[i]),x,y)
+                i++
+            }
+        },drawRate)
+        running = false
     }
-
-
-    setInterval(function(){
-        if (i < board.size*board.size) {
-            var x,y, r
-            var n = $('#size').val()
-            var sqSize = canvas.width / n
-            r = 0.3 * sqSize
-            x = board.prev[i].x * sqSize + sqSize/2
-            y = board.prev[i].y * sqSize + sqSize/2
-            c.beginPath()
-            c.arc(x,y,r,0,2*Math.PI,false)
-            c.fillStyle = "green"
-            c.fill()
-            c.beginPath()
-            c.fillStyle = "white"
-            c.fillText(board.readState(board.prev[i]),x,y)
-            i++
-        }
-    },drawRate)
+    else {
+        alert('already calculating...')
+    }
+    
 
 }
 function drawBoard() {
@@ -157,6 +174,7 @@ function move(board){
     if (board.steps < board.size*board.size -1 && board.steps > -1) {
         board.getNext()
 //        alert(JSON.stringify(board.pos))
+//        alert(board.steps)
         board.sortNext()
         var n = board.readNextIndex(board.pos)
         if (board.next.length > 0 && n < board.next.length) {
