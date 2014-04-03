@@ -3,6 +3,8 @@ var canvas = document.getElementById('canvas');
 var c
 var running = false
 
+var its = 0;
+
 
 c = canvas.getContext('2d')
 drawBoard()
@@ -30,6 +32,7 @@ function doMouseUp(event) {
 //    alert([startx,starty])
 
     if (!running) {
+        its = 0
         running = true
         var board = new makeBoard(n,[startx,starty])
         var i = 0
@@ -52,8 +55,9 @@ function doMouseUp(event) {
         }
 
 
+        var len = board.prev.length
         setInterval(function(){
-            if (i < board.size*board.size) {
+            if (i < len) {
                 var x,y, r
                 var n = $('#size').val()
                 var sqSize = canvas.width / n
@@ -127,6 +131,7 @@ function makeBoard(size,begin) {
     this.squares = []
     this.next = []
     this.prev = [{"x":begin[0],"y":begin[1]}]
+    this.stack = []
 
     /****** methods ********/
     this.move = function(){
@@ -171,20 +176,26 @@ function makeBoard(size,begin) {
 /************* other methods **************/
 /******************************************/
 function move(board){
-    if (board.steps < board.size*board.size -1 && board.steps > -1) {
-        board.getNext()
-//        alert(JSON.stringify(board.pos))
-//        alert(board.steps)
-        board.sortNext()
-        var n = board.readNextIndex(board.pos)
+    board.getNext()
+    board.sortNext()
+    var n = board.readNextIndex(board.pos)
+    while (board.steps < board.size*board.size -1 && board.steps > -1) {
+        its++
+//            if (its%(board.size*board.size*2) == 0) {
+//                alert(its)
+//            }
+        n = board.readNextIndex(board.pos)
+//        alert(JSON.stringify([board.prev.length,board.steps,board.pos]))
+//        if (elsed) alert("else")
         if (board.next.length > 0 && n < board.next.length) {
             board.pos.x = board.next[n].x
             board.pos.y = board.next[n].y
             board.steps++
+            board.getNext()
+            board.sortNext()
             board.writeNextIndex(board.pos,0)
             board.writeState(board.pos,board.steps)
             board.prev[board.steps] = {"x":board.pos.x,"y":board.pos.y}
-            move(board)
         }
         else {
             board.writeState(board.pos, -1)
@@ -192,16 +203,45 @@ function move(board){
             board.pos.x = board.prev[board.steps].x
             board.pos.y = board.prev[board.steps].y
             board.incNextIndex(board.pos)
-            move(board)
+            board.getNext()
+            board.sortNext()
         }
     }
-    else {
-        if (board.steps < 0) {
-            alert('no solution found!')
-        }
-//        alert(JSON.stringify([board.prev,board.prev.length]))
-        return
+    if (board.steps < 0) {
+        alert("no solution found!")
     }
+//    alert(its)
+//   if (board.steps < board.size*board.size -1 && board.steps > -1) {
+//       board.getNext()
+///        alert(JSON.stringify(board.pos))
+///        alert(board.steps)
+//       board.sortNext()
+//       var n = board.readNextIndex(board.pos)
+//       if (board.next.length > 0 && n < board.next.length) {
+//           board.pos.x = board.next[n].x
+//           board.pos.y = board.next[n].y
+//           board.steps++
+//           board.writeNextIndex(board.pos,0)
+//           board.writeState(board.pos,board.steps)
+//           board.prev[board.steps] = {"x":board.pos.x,"y":board.pos.y}
+//           move(board)
+//       }
+//       else {
+//           board.writeState(board.pos, -1)
+//           board.steps--
+//           board.pos.x = board.prev[board.steps].x
+//           board.pos.y = board.prev[board.steps].y
+//           board.incNextIndex(board.pos)
+//           move(board)
+//       }
+//   }
+//   else {
+//       if (board.steps < 0) {
+//           alert('no solution found!')
+//       }
+////        alert(JSON.stringify([board.prev,board.prev.length]))
+//       return
+//   }
 }
 function getNext(board,inPos) {
     var next = []
